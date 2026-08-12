@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    background-color: #0B1210;
+    color: #EDEFE9;
+  }
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background-image:
+      linear-gradient(rgba(237,239,233,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(237,239,233,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  *:focus-visible {
+    outline: 2px solid #E8A33D;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-display {
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.01em;
+  }
+  .text-data {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .dossier-card {
+    background: #131F1A;
+    border: 1px solid #24352C;
+  }
+  .route-dash {
+    stroke-dasharray: 4 4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
