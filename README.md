@@ -133,12 +133,15 @@ no string-concatenated Cypher anywhere in the codebase.
 
 ## Screenshots
 
-*(Add screenshots here — see "Adding your screenshots" below)*
+**Landing page** — live graph telemetry pulled directly from CognoDB (player, club, agent, and connection counts update from the real database, not hardcoded):
 
-- Landing page with live graph telemetry
-- Player dossier with career timeline and network graph
-- Scouting chain query returning real candidates
-- Club dossier with squad and agent clusters
+![Scout landing page](./screenshots/landing-page.png)
+
+**Scouting chain query** — the signature 3-hop traversal in action. Given a player and a target club, it returns real candidates connected through a shared agent:
+
+![Scouting chain query result](./screenshots/scouting-chain-query.png)
+
+*(Full walkthrough, including the player dossier, network graph, and club pages, is in the screen recording linked in the submission email.)*
 
 ---
 
