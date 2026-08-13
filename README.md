@@ -135,11 +135,11 @@ no string-concatenated Cypher anywhere in the codebase.
 
 **Landing page** — live graph telemetry pulled directly from CognoDB (player, club, agent, and connection counts update from the real database, not hardcoded):
 
-![Scout landing page](./screenshots/landing-page.png)
+![Scout landing page](./Screenshots/landing-page.png)
 
 **Scouting chain query** — the signature 3-hop traversal in action. Given a player and a target club, it returns real candidates connected through a shared agent:
 
-![Scouting chain query result](./screenshots/scouting-chain-query.png)
+![Scouting chain query result](./Screenshots/scouting-chain-query.png)
 
 *(Full walkthrough, including the player dossier, network graph, and club pages, is in the screen recording linked in the submission email.)*
 
