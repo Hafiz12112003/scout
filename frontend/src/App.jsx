@@ -5,6 +5,7 @@ import Landing from './pages/Landing'
 import PlayerDetail from './pages/PlayerDetail'
 import ClubDetail from './pages/ClubDetail'
 import Explore from './pages/Explore'
+import HiddenGems from './pages/HiddenGems'
 import { api } from './api'
 
 export default function App() {
@@ -24,7 +25,7 @@ export default function App() {
       {dbStatus === 'down' && (
         <div className="bg-floodlight-dim/20 border-b border-floodlight-dim px-6 py-2.5 text-center">
           <p className="text-data text-xs text-floodlight">
-            GRAPH UNREACHABLE — the backend can't reach CognoDB right now. Data may be stale or unavailable.
+            GRAPH UNREACHABLE — the backend can't reach the database right now. Data may be stale or unavailable.
           </p>
         </div>
       )}
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/player/:name" element={<PlayerDetail />} />
           <Route path="/club/:name" element={<ClubDetail />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/gems" element={<HiddenGems />} />
         </Routes>
       </main>
 

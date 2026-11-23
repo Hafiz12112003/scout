@@ -30,8 +30,9 @@ def get_squad(club_name):
     MATCH (p:Player)-[played:PLAYED_FOR]->(c:Club {name: $club_name})
     WHERE played.to_year IS NULL OR played.to_year >= 2026
     RETURN p.name AS name, p.position AS position, p.nationality AS nationality,
+           p.market_value AS market_value, p.upside_pct AS upside_pct,
            played.appearances AS appearances, played.goals AS goals
-    ORDER BY played.appearances DESC
+    ORDER BY p.market_value DESC
     """
     try:
         results = run_query(cypher, {"club_name": club_name})

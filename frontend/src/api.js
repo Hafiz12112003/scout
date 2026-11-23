@@ -43,4 +43,14 @@ export const api = {
   managerLineage: (club) => request(`/api/network/manager-lineage?club=${encodeURIComponent(club)}`),
 
   graphExplore: (player) => request(`/api/network/graph-explore?player=${encodeURIComponent(player)}`),
+
+  hiddenGems: ({ position = '', maxAge = 28, minValue = 5000000, limit = 20 } = {}) =>
+    request(
+      `/api/insights/hidden-gems?position=${encodeURIComponent(position)}&max_age=${maxAge}&min_value=${minValue}&limit=${limit}`
+    ),
+
+  modelCard: () => request('/api/insights/model-card'),
+
+  reach: (club, player) =>
+    request(`/api/insights/reach?club=${encodeURIComponent(club)}&player=${encodeURIComponent(player)}`),
 }

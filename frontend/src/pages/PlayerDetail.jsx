@@ -5,11 +5,14 @@ import { api } from '../api'
 import { LoadingState, ErrorState } from '../components/States'
 import NetworkGraph from '../components/NetworkGraph'
 
+const millions = (v) => `€${(v / 1000000).toFixed(v >= 10000000 ? 0 : 1)}M`
+
 export default function PlayerDetail() {
   const { name } = useParams()
   const [player, setPlayer] = useState(null)
   const [teammates, setTeammates] = useState([])
   const [similar, setSimilar] = useState([])
+  const [similarMethod, setSimilarMethod] = useState('')
   const [status, setStatus] = useState('loading')
   const [error, setError] = useState('')
 
@@ -20,6 +23,7 @@ export default function PlayerDetail() {
         setPlayer(playerData)
         setTeammates(teammateData.teammates || [])
         setSimilar(similarData.similar || [])
+        setSimilarMethod(similarData.method || '')
         setStatus('done')
       })
       .catch((e) => {
@@ -32,7 +36,9 @@ export default function PlayerDetail() {
   if (status === 'error') return <div className="max-w-6xl mx-auto px-6 py-12"><ErrorState message={error} /></div>
   if (!player || !player.name) return <div className="max-w-6xl mx-auto px-6 py-12"><ErrorState message="Player not found in the graph" /></div>
 
-  const clubsHistory = (player.clubs_history || []).filter((c) => c.club).sort((a, b) => a.from_year - b.from_year)
+  const clubsHistory = (player.clubs_history || []).filter((c) => c.club).sort((a, b) => (a.from_year || 0) - (b.from_year || 0))
+  const hasModel = player.predicted_value != null && player.market_value
+  const approx = player.value_source === 'approximate'
 
   const graphNodes = [
     { id: 'center', label: player.name },
@@ -63,9 +69,9 @@ export default function PlayerDetail() {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-data text-xs text-slate-muted mb-1">MARKET VALUE</p>
+            <p className="text-data text-xs text-slate-muted mb-1">MARKET VALUE{approx ? ' (APPROX.)' : ''}</p>
             <p className="text-display text-4xl text-floodlight">
-              €{(player.market_value / 1000000).toFixed(0)}M
+              {player.market_value ? millions(player.market_value) : '—'}
             </p>
           </div>
         </div>
@@ -79,7 +85,7 @@ export default function PlayerDetail() {
               {clubsHistory.map((stint, i) => (
                 <div key={i} className="flex gap-4 py-4 border-b border-pitch-line last:border-0">
                   <div className="text-data text-sm text-live w-28 shrink-0">
-                    {stint.from_year}–{stint.to_year || 'now'}
+                    {stint.from_year || '—'}–{stint.to_year || 'now'}
                   </div>
                   <div className="flex-1">
                     <Link
@@ -88,9 +94,11 @@ export default function PlayerDetail() {
                     >
                       {stint.club}
                     </Link>
-                    <p className="text-sm text-slate-muted text-data">
-                      {stint.appearances} apps · {stint.goals} goals
-                    </p>
+                    {stint.appearances != null && (
+                      <p className="text-sm text-slate-muted text-data">
+                        {stint.appearances} apps · {stint.goals ?? 0} goals
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -112,17 +120,55 @@ export default function PlayerDetail() {
 
         <aside className="space-y-6">
           <div className="dossier-card rounded-lg p-5">
+            <p className="text-data text-xs text-floodlight tracking-wide mb-3">VALUE MODEL</p>
+            {hasModel ? (
+              <>
+                <div className="flex items-end justify-between mb-3">
+                  <div>
+                    <p className="text-data text-[10px] text-slate-muted">MODEL ESTIMATE</p>
+                    <p className="text-display text-3xl text-chalk leading-none">{millions(player.predicted_value)}</p>
+                  </div>
+                  <p
+                    className={`text-display text-2xl leading-none ${
+                      player.upside_pct >= 0 ? 'text-live' : 'text-floodlight'
+                    }`}
+                  >
+                    {player.upside_pct >= 0 ? '+' : ''}
+                    {Math.round(player.upside_pct)}%
+                  </p>
+                </div>
+                <p className="text-xs text-slate-muted leading-relaxed">
+                  {player.upside_pct >= 0 ? 'Priced below' : 'Priced above'} what age, position and three seasons of
+                  output suggest. Based on about {Math.round(player.model_minutes)} weighted minutes. Includes a
+                  club-size effect.
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-slate-muted leading-relaxed">
+                No estimate: the model covers Premier League players with enough minutes.
+              </p>
+            )}
+          </div>
+
+          <div className="dossier-card rounded-lg p-5">
             <p className="text-data text-xs text-slate-muted tracking-wide mb-3">REPRESENTATION</p>
             <p className="text-chalk font-medium">{player.agent_name || 'Unlisted'}</p>
-            {player.agent_agency && (
-              <p className="text-sm text-slate-muted">{player.agent_agency}</p>
+            {player.agent_agency && <p className="text-sm text-slate-muted">{player.agent_agency}</p>}
+            {player.agent_source === 'reported' && (
+              <p className="text-data text-[10px] text-slate-muted mt-2">PUBLICLY REPORTED · NOT VERIFIED</p>
             )}
           </div>
 
           {similar.length > 0 && (
             <div className="dossier-card rounded-lg p-5">
-              <p className="text-data text-xs text-floodlight tracking-wide mb-1">SCOUTING ALTERNATIVES</p>
-              <p className="text-xs text-slate-muted mb-3">Same position, comparable value</p>
+              <p className="text-data text-xs text-floodlight tracking-wide mb-1">
+                {similarMethod === 'neural' ? 'PLAYERS LIKE THIS' : 'SCOUTING ALTERNATIVES'}
+              </p>
+              <p className="text-xs text-slate-muted mb-3">
+                {similarMethod === 'neural'
+                  ? 'Nearest in the neural network’s learned player space'
+                  : 'Same position, comparable value'}
+              </p>
               <div className="space-y-3">
                 {similar.map((s) => (
                   <Link
@@ -131,14 +177,15 @@ export default function PlayerDetail() {
                     className="flex items-center justify-between group"
                   >
                     <div>
-                      <p className="text-sm text-chalk group-hover:text-floodlight transition-colors">
-                        {s.name}
-                      </p>
+                      <p className="text-sm text-chalk group-hover:text-floodlight transition-colors">{s.name}</p>
                       <p className="text-xs text-slate-muted">{s.nationality}</p>
                     </div>
-                    <p className="text-data text-xs text-live">
-                      €{(s.market_value / 1000000).toFixed(0)}M
-                    </p>
+                    <div className="text-right">
+                      <p className="text-data text-xs text-live">{s.market_value ? millions(s.market_value) : ''}</p>
+                      {s.score != null && (
+                        <p className="text-data text-[10px] text-slate-muted">{Math.round(s.score * 100)}% MATCH</p>
+                      )}
+                    </div>
                   </Link>
                 ))}
               </div>

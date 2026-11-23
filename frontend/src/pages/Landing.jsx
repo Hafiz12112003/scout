@@ -11,9 +11,11 @@ export default function Landing() {
   const [status, setStatus] = useState('idle') // idle | loading | done | error
   const [error, setError] = useState('')
   const [stats, setStats] = useState(null)
+  const [model, setModel] = useState(null)
 
   useEffect(() => {
     api.getGraphStats().then(setStats).catch(() => setStats(null))
+    api.modelCard().then(setModel).catch(() => setModel(null))
   }, [])
 
   useEffect(() => {
@@ -48,12 +50,12 @@ export default function Landing() {
           GRAPH-POWERED RECRUITMENT INTELLIGENCE
         </p>
         <h1 className="text-display text-5xl md:text-6xl font-semibold text-chalk leading-[0.95] mb-4 max-w-2xl">
-          Trace the network behind every transfer.
+          Find the players the market undervalues.
         </h1>
         <p className="text-slate-muted max-w-lg text-base leading-relaxed">
-          Scout follows the connections a spreadsheet can't — shared agents,
-          former teammates, manager lineages — to surface recruitment leads
-          hidden inside the data.
+          Clubs overpay when they scout through who they already know. Scout pairs a neural
+          value model with a graph of teammates, managers and transfers, so you see who is
+          cheap for what they deliver, and the network that leads to them.
         </p>
       </motion.section>
 
@@ -66,8 +68,8 @@ export default function Landing() {
         >
           <StatBlip value={stats.players} label="PLAYERS TRACKED" />
           <StatBlip value={stats.clubs} label="CLUBS" />
-          <StatBlip value={stats.agents} label="AGENTS" />
           <StatBlip value={stats.relationships} label="CONNECTIONS" />
+          {model?.blend_r2 && <StatBlip value={model.blend_r2} label="VALUE MODEL R²" />}
         </motion.section>
       )}
 
@@ -83,7 +85,7 @@ export default function Landing() {
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a player — try Bellingham, Haaland, Messi..."
+            placeholder="Search a player — try Yamal, Haaland, Kane..."
             className="flex-1 bg-transparent outline-none py-3 text-chalk placeholder:text-slate-muted text-data text-sm"
           />
           {status === 'loading' && (
@@ -127,18 +129,18 @@ export default function Landing() {
         {status === 'idle' && (
           <div className="grid md:grid-cols-3 gap-4 mt-8">
             <SuggestionCard
-              label="MULTI-HOP TRAVERSAL"
-              text="Teammates-of-teammates who share an agent with a target club's players"
+              label="HIDDEN GEMS"
+              text="Premier League players whose market value sits well below what the model expects"
+              onClick={() => navigate('/gems')}
+            />
+            <SuggestionCard
+              label="SCOUTING CHAIN"
+              text="Young players linked to a star through shared clubs, ranked by model upside"
               onClick={() => navigate('/explore')}
             />
             <SuggestionCard
               label="SHORTEST PATH"
-              text="Degrees of separation between any two players in the network"
-              onClick={() => navigate('/explore')}
-            />
-            <SuggestionCard
-              label="AGENT CLUSTERS"
-              text="Which agents repeatedly move players to the same club"
+              text="Degrees of separation between any two players, traced through clubs"
               onClick={() => navigate('/explore')}
             />
           </div>

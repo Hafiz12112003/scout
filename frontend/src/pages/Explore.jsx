@@ -51,8 +51,8 @@ export default function Explore() {
 }
 
 function ScoutingChainPanel({ presetPlayer }) {
-  const [player, setPlayer] = useState(presetPlayer)
-  const [targetClub, setTargetClub] = useState('Paris Saint-Germain')
+  const [player, setPlayer] = useState(presetPlayer || 'Harry Kane')
+  const [targetClub, setTargetClub] = useState('FC Barcelona')
   const [maxAge, setMaxAge] = useState(25)
   const [status, setStatus] = useState('idle')
   const [results, setResults] = useState([])
@@ -74,9 +74,9 @@ function ScoutingChainPanel({ presetPlayer }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <p className="text-sm text-slate-muted mb-5 max-w-2xl">
-        Finds players who were teammates of <span className="text-chalk">Player</span> at any club,
-        are under the age cutoff, and share an agent with someone already transferred to{' '}
-        <span className="text-chalk">Target Club</span>. A 3-hop traversal.
+        Finds players under the age cutoff who shared a club with <span className="text-chalk">Player</span> and
+        are not already at <span className="text-chalk">Target Club</span>, ranked by how undervalued the value
+        model thinks they are (Premier League players only).
       </p>
       <div className="grid md:grid-cols-4 gap-3 mb-6">
         <Field label="PLAYER" value={player} onChange={setPlayer} placeholder="Jude Bellingham" />
@@ -90,7 +90,7 @@ function ScoutingChainPanel({ presetPlayer }) {
         </button>
       </div>
 
-      {status === 'loading' && <LoadingState label="Traversing 3 hops" />}
+      {status === 'loading' && <LoadingState label="Traversing the graph" />}
       {status === 'error' && <ErrorState message={error} />}
       {status === 'done' && results.length === 0 && (
         <EmptyState title="No candidates found" hint="Try a different player or target club — the graph may not connect them." />
@@ -102,10 +102,16 @@ function ScoutingChainPanel({ presetPlayer }) {
               <div>
                 <p className="text-chalk font-medium">{c.name}</p>
                 <p className="text-sm text-slate-muted text-data">
-                  {c.position} · b.{c.birth_year} · agent: {c.agent_name}
+                  {c.position} · b.{c.birth_year} · via {c.shared_club}
+                  {c.agent_name ? ` · agent: ${c.agent_name}` : ''}
                 </p>
               </div>
-              <p className="text-data text-sm text-live">€{(c.market_value / 1000000).toFixed(0)}M</p>
+              <div className="text-right">
+                <p className="text-data text-sm text-live">€{(c.market_value / 1000000).toFixed(0)}M</p>
+                {c.upside_pct != null && (
+                  <p className="text-data text-xs text-floodlight">{c.upside_pct > 0 ? '+' : ''}{Math.round(c.upside_pct)}% vs model</p>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -115,8 +121,8 @@ function ScoutingChainPanel({ presetPlayer }) {
 }
 
 function ShortestPathPanel() {
-  const [playerA, setPlayerA] = useState('Cristiano Ronaldo')
-  const [playerB, setPlayerB] = useState('Erling Haaland')
+  const [playerA, setPlayerA] = useState('Harry Kane')
+  const [playerB, setPlayerB] = useState('Lamine Yamal')
   const [status, setStatus] = useState('idle')
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
@@ -169,7 +175,7 @@ function ShortestPathPanel() {
 }
 
 function ManagerLineagePanel() {
-  const [club, setClub] = useState('Manchester City')
+  const [club, setClub] = useState('FC Barcelona')
   const [status, setStatus] = useState('idle')
   const [results, setResults] = useState([])
   const [error, setError] = useState('')

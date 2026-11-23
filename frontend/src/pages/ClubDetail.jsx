@@ -76,7 +76,7 @@ export default function ClubDetail() {
                             </p>
                           </div>
                           <p className="text-data text-sm text-live">
-                            {p.appearances} apps · {p.goals} goals
+                            {p.market_value ? `€${(p.market_value / 1000000).toFixed(0)}M` : ''}
                           </p>
                         </Link>
                       ))}

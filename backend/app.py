@@ -1,6 +1,6 @@
 """
 Scout - Football Scouting & Transfer Intelligence Platform
-Flask API backed by CognoDB (graph database).
+Flask API backed by a Neo4j-compatible graph database.
 """
 import os
 from flask import Flask, jsonify
@@ -13,6 +13,7 @@ from db import verify_connection, close_driver
 from routes.players import players_bp
 from routes.clubs import clubs_bp
 from routes.network import network_bp
+from routes.insights import insights_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +21,7 @@ CORS(app)
 app.register_blueprint(players_bp, url_prefix="/api/players")
 app.register_blueprint(clubs_bp, url_prefix="/api/clubs")
 app.register_blueprint(network_bp, url_prefix="/api/network")
+app.register_blueprint(insights_bp, url_prefix="/api/insights")
 
 
 @app.route("/api/health")

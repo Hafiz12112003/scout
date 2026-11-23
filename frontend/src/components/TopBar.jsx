@@ -20,6 +20,12 @@ export default function TopBar() {
         </Link>
         <nav className="flex items-center gap-6 text-sm text-data">
           <Link
+            to="/gems"
+            className={`transition-colors ${location.pathname === '/gems' ? 'text-floodlight' : 'text-slate-muted hover:text-chalk'}`}
+          >
+            GEMS
+          </Link>
+          <Link
             to="/explore"
             className={`transition-colors ${location.pathname === '/explore' ? 'text-floodlight' : 'text-slate-muted hover:text-chalk'}`}
           >

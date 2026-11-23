@@ -8,10 +8,9 @@ network_bp = Blueprint("network", __name__)
 @network_bp.route("/scouting-chain", methods=["GET"])
 def scouting_chain():
     """
-    THE signature multi-hop query.
-    Find players who were teammates of a given player at any club, are
-    represented by an agent who also represents players at a target club,
-    and are under a given age.
+    Young players connected to a given player through a shared former club, who are not already
+    at the target club. Ranked by how undervalued the value model thinks they are (when known),
+    then by market value. Representation is shown when it is on record.
     """
     player_name = request.args.get("player", "")
     target_club = request.args.get("target_club", "")
@@ -22,13 +21,17 @@ def scouting_chain():
     min_birth_year = date.today().year - max_age
 
     cypher = """
-    MATCH (source:Player {name: $player_name})-[:PLAYED_FOR]->(:Club)<-[:PLAYED_FOR]-(candidate:Player)
+    MATCH (source:Player {name: $player_name})-[:PLAYED_FOR]->(shared:Club)<-[:PLAYED_FOR]-(candidate:Player)
     WHERE candidate.name <> $player_name AND candidate.birth_year >= $min_birth_year
-    MATCH (candidate)-[:REPRESENTED_BY]->(agent:Agent)
-    MATCH (agent)<-[:REPRESENTED_BY]-(:Player)-[:TRANSFERRED_TO]->(:Club {name: $target_club})
-    RETURN DISTINCT candidate.name AS name, candidate.position AS position,
-           candidate.birth_year AS birth_year, candidate.market_value AS market_value,
-           agent.name AS agent_name
+    OPTIONAL MATCH (candidate)-[atTarget:PLAYED_FOR]->(:Club {name: $target_club})
+    WHERE atTarget.to_year IS NULL
+    WITH candidate, shared, atTarget
+    WHERE atTarget IS NULL
+    OPTIONAL MATCH (candidate)-[:REPRESENTED_BY]->(agent:Agent)
+    RETURN candidate.name AS name, candidate.position AS position, candidate.birth_year AS birth_year,
+           candidate.market_value AS market_value, candidate.upside_pct AS upside_pct,
+           agent.name AS agent_name, collect(DISTINCT shared.name)[0] AS shared_club
+    ORDER BY coalesce(candidate.upside_pct, -1000) DESC, candidate.market_value DESC
     LIMIT 25
     """
     try:
