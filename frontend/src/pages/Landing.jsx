@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { api } from '../api'
 import { LoadingState, EmptyState, ErrorState } from '../components/States'
+import { StatTile, Stripes, Tile } from '../components/ui'
+import { euro } from '../lib/format'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -22,123 +23,123 @@ export default function Landing() {
     if (query.trim().length < 2) {
       setResults([])
       setStatus('idle')
-      return
+      return undefined
     }
+    let alive = true
     const timeout = setTimeout(async () => {
       setStatus('loading')
       try {
         const data = await api.searchPlayers(query)
+        if (!alive) return
         setResults(data.players || [])
         setStatus('done')
       } catch (e) {
+        if (!alive) return
         setError(e.message)
         setStatus('error')
       }
     }, 350)
-    return () => clearTimeout(timeout)
+    return () => {
+      alive = false
+      clearTimeout(timeout)
+    }
   }, [query])
 
   return (
-    <div className="max-w-6xl mx-auto px-6">
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="pt-20 pb-10"
-      >
-        <p className="text-data text-xs text-live tracking-widest mb-3">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="pt-14 sm:pt-20 pb-10">
+        <p className="reveal text-data text-xs text-volt tracking-[0.22em] mb-4">
           GRAPH-POWERED RECRUITMENT INTELLIGENCE
         </p>
-        <h1 className="text-display text-5xl md:text-6xl font-semibold text-chalk leading-[0.95] mb-4 max-w-2xl">
-          Find the players the market undervalues.
+        <h1
+          className="reveal text-display text-6xl sm:text-7xl md:text-8xl text-chalk leading-[0.9] max-w-4xl"
+          style={{ '--i': 1 }}
+        >
+          Find the players the market <span className="text-volt">undervalues.</span>
         </h1>
-        <p className="text-slate-muted max-w-lg text-base leading-relaxed">
-          Clubs overpay when they scout through who they already know. Scout pairs a neural
-          value model with a graph of teammates, managers and transfers, so you see who is
-          cheap for what they deliver, and the network that leads to them.
+        <Stripes className="reveal h-2 w-40 mt-6" />
+        <p className="reveal text-mute max-w-xl text-base leading-relaxed mt-6" style={{ '--i': 2 }}>
+          Clubs overpay when they scout through who they already know. Scout pairs a neural value model with a graph
+          of teammates, managers and transfers, so you see who is cheap for what they deliver, and the network that
+          leads to them.
         </p>
-      </motion.section>
+      </section>
 
       {stats && (
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex flex-wrap gap-x-8 gap-y-2 mb-10 pb-6 border-b border-pitch-line"
-        >
-          <StatBlip value={stats.players} label="PLAYERS TRACKED" />
-          <StatBlip value={stats.clubs} label="CLUBS" />
-          <StatBlip value={stats.relationships} label="CONNECTIONS" />
-          {model?.blend_r2 && <StatBlip value={model.blend_r2} label="VALUE MODEL R²" />}
-        </motion.section>
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+          <StatTile index={0} value={stats.players} label="PLAYERS TRACKED" />
+          <StatTile index={1} value={stats.clubs} label="CLUBS" />
+          <StatTile index={2} value={stats.relationships} label="CONNECTIONS" />
+          {model?.blend_r2 && <StatTile index={3} value={model.blend_r2} decimals={3} label="VALUE MODEL R2" />}
+        </section>
       )}
 
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="mb-6"
-      >
-        <div className="dossier-card rounded-lg p-1.5 flex items-center gap-3">
-          <span className="text-live text-data text-sm pl-4 select-none">&gt;</span>
+      <section className="mb-6 reveal" style={{ '--i': 3 }}>
+        <label htmlFor="player-search" className="sr-only">
+          Search a player
+        </label>
+        <div className="tile tile-accent flex items-center gap-3 pl-5 pr-2 focus-within:border-volt transition-colors">
+          <span className="text-volt text-data text-sm select-none" aria-hidden="true">
+            &gt;
+          </span>
           <input
+            id="player-search"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a player — try Yamal, Haaland, Kane..."
-            className="flex-1 bg-transparent outline-none py-3 text-chalk placeholder:text-slate-muted text-data text-sm"
+            placeholder="Search a player - try Yamal, Haaland, Kane..."
+            className="flex-1 bg-transparent outline-none py-4 text-chalk placeholder:text-mute text-data text-sm"
           />
           {status === 'loading' && (
-            <span className="w-1.5 h-1.5 rounded-full bg-live animate-pulse mr-4" />
+            <span className="w-2 h-2 bg-volt animate-pulse mr-4" style={{ transform: 'skewX(-12deg)' }} />
           )}
         </div>
-      </motion.section>
+      </section>
 
       <section className="pb-24">
         {status === 'loading' && <LoadingState label="Searching players" />}
         {status === 'error' && <ErrorState message={error} />}
         {status === 'done' && results.length === 0 && (
-          <EmptyState
-            title="No matches on record"
-            hint="Try a different spelling, or search by surname only."
-          />
+          <EmptyState title="No matches on record" hint="Try a different spelling, or search by surname only." />
         )}
         {status === 'done' && results.length > 0 && (
-          <div className="grid gap-2">
-            {results.map((p) => (
+          <div className="grid gap-2.5">
+            {results.map((p, i) => (
               <button
                 key={p.name}
                 onClick={() => navigate(`/player/${encodeURIComponent(p.name)}`)}
-                className="dossier-card rounded-md px-5 py-4 flex items-center justify-between text-left hover:border-live transition-colors group"
+                className="tile reveal w-full px-5 py-4 flex items-center justify-between text-left hover:bg-panel2 hover:border-volt transition-colors group"
+                style={{ '--i': Math.min(i, 8) }}
               >
-                <div>
-                  <p className="text-display text-xl text-chalk group-hover:text-floodlight transition-colors">
+                <div className="min-w-0">
+                  <p className="text-display text-2xl text-chalk group-hover:text-volt transition-colors truncate leading-tight">
                     {p.name}
                   </p>
-                  <p className="text-sm text-slate-muted">
-                    {p.position} · {p.nationality} · b.{p.birth_year}
+                  <p className="text-data text-[11px] tracking-wider text-mute uppercase">
+                    {p.position} / {p.nationality} / b.{p.birth_year}
                   </p>
                 </div>
-                <p className="text-data text-sm text-live">
-                  €{(p.market_value / 1000000).toFixed(0)}M
-                </p>
+                <p className="text-display text-3xl text-chalk shrink-0 pl-4">{euro(p.market_value)}</p>
               </button>
             ))}
           </div>
         )}
         {status === 'idle' && (
-          <div className="grid md:grid-cols-3 gap-4 mt-8">
-            <SuggestionCard
+          <div className="grid md:grid-cols-3 gap-3 mt-8">
+            <Suggestion
+              index={0}
               label="HIDDEN GEMS"
               text="Premier League players whose market value sits well below what the model expects"
               onClick={() => navigate('/gems')}
             />
-            <SuggestionCard
+            <Suggestion
+              index={1}
               label="SCOUTING CHAIN"
               text="Young players linked to a star through shared clubs, ranked by model upside"
               onClick={() => navigate('/explore')}
             />
-            <SuggestionCard
+            <Suggestion
+              index={2}
               label="SHORTEST PATH"
               text="Degrees of separation between any two players, traced through clubs"
               onClick={() => navigate('/explore')}
@@ -150,24 +151,16 @@ export default function Landing() {
   )
 }
 
-function StatBlip({ value, label }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="w-1.5 h-1.5 rounded-full bg-live animate-pulse" />
-      <span className="text-display text-2xl text-chalk leading-none">{value}</span>
-      <span className="text-data text-[10px] text-slate-muted tracking-widest">{label}</span>
-    </div>
-  )
-}
-
-function SuggestionCard({ label, text, onClick }) {
+function Suggestion({ label, text, onClick, index }) {
   return (
     <button
       onClick={onClick}
-      className="dossier-card rounded-md p-5 text-left hover:border-live transition-colors"
+      className="tile reveal p-5 text-left hover:bg-panel2 hover:border-volt transition-colors flex flex-col"
+      style={{ '--i': index + 4 }}
     >
-      <p className="text-data text-xs text-floodlight mb-2 tracking-wide">{label}</p>
-      <p className="text-sm text-chalk leading-relaxed">{text}</p>
+      <Stripes className="h-1 w-12 mb-3" />
+      <p className="text-display text-2xl text-chalk mb-2">{label}</p>
+      <p className="text-sm text-mute leading-relaxed">{text}</p>
     </button>
   )
 }

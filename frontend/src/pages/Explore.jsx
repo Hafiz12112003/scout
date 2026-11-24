@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { api } from '../api'
 import { LoadingState, EmptyState, ErrorState } from '../components/States'
+import { PageHeader, SegmentedControl, Tile } from '../components/ui'
+import { euro } from '../lib/format'
 
 const TABS = [
-  { id: 'chain', label: 'SCOUTING CHAIN' },
-  { id: 'path', label: 'SHORTEST PATH' },
-  { id: 'lineage', label: 'MANAGER LINEAGE' },
+  { value: 'chain', label: 'SCOUTING CHAIN' },
+  { value: 'path', label: 'SHORTEST PATH' },
+  { value: 'lineage', label: 'MANAGER LINEAGE' },
 ]
 
 export default function Explore() {
@@ -16,31 +17,14 @@ export default function Explore() {
   const [tab, setTab] = useState('chain')
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pb-24">
-      <section className="pt-12 pb-8">
-        <p className="text-data text-xs text-live tracking-widest mb-2">GRAPH QUERIES</p>
-        <h1 className="text-display text-5xl font-semibold text-chalk mb-3">
-          Run the traversals.
-        </h1>
-        <p className="text-slate-muted max-w-xl">
-          These are the questions a relational database makes painful. Here, they're a graph pattern.
-        </p>
-      </section>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 pt-10">
+      <PageHeader kicker="GRAPH QUERIES" title="Run the traversals" />
+      <p className="text-mute max-w-xl -mt-3 mb-8">
+        These are the questions a relational database makes painful. Here, they're a graph pattern.
+      </p>
 
-      <div className="flex gap-1 mb-8 border-b border-pitch-line">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`px-4 py-3 text-data text-xs tracking-wide transition-colors border-b-2 -mb-px ${
-              tab === t.id
-                ? 'text-floodlight border-floodlight'
-                : 'text-slate-muted border-transparent hover:text-chalk'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-8 pb-6 border-b border-edge">
+        <SegmentedControl label="Query type" options={TABS} value={tab} onChange={setTab} />
       </div>
 
       {tab === 'chain' && <ScoutingChainPanel presetPlayer={preset} />}
@@ -72,51 +56,54 @@ function ScoutingChainPanel({ presetPlayer }) {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-      <p className="text-sm text-slate-muted mb-5 max-w-2xl">
-        Finds players under the age cutoff who shared a club with <span className="text-chalk">Player</span> and
-        are not already at <span className="text-chalk">Target Club</span>, ranked by how undervalued the value
-        model thinks they are (Premier League players only).
+    <div className="reveal">
+      <p className="text-sm text-mute mb-5 max-w-2xl">
+        Finds players under the age cutoff who shared a club with <span className="text-chalk">Player</span> and are
+        not already at <span className="text-chalk">Target Club</span>, ranked by how undervalued the value model
+        thinks they are (Premier League players only).
       </p>
       <div className="grid md:grid-cols-4 gap-3 mb-6">
         <Field label="PLAYER" value={player} onChange={setPlayer} placeholder="Jude Bellingham" />
         <Field label="TARGET CLUB" value={targetClub} onChange={setTargetClub} placeholder="Paris Saint-Germain" />
         <Field label="MAX AGE" value={maxAge} onChange={setMaxAge} type="number" />
-        <button
-          onClick={run}
-          className="self-end bg-live hover:bg-live-dim transition-colors text-pitch-night font-medium rounded-md py-3 text-data text-sm"
-        >
-          RUN QUERY
-        </button>
+        <RunButton onClick={run}>RUN QUERY</RunButton>
       </div>
 
       {status === 'loading' && <LoadingState label="Traversing the graph" />}
       {status === 'error' && <ErrorState message={error} />}
       {status === 'done' && results.length === 0 && (
-        <EmptyState title="No candidates found" hint="Try a different player or target club — the graph may not connect them." />
+        <EmptyState title="No candidates found" hint="Try a different player or target club - the graph may not connect them." />
       )}
       {status === 'done' && results.length > 0 && (
-        <div className="grid gap-2">
+        <div className="grid gap-2.5">
           {results.map((c, i) => (
-            <div key={i} className="dossier-card rounded-md px-5 py-4 flex items-center justify-between">
-              <div>
-                <p className="text-chalk font-medium">{c.name}</p>
-                <p className="text-sm text-slate-muted text-data">
-                  {c.position} · b.{c.birth_year} · via {c.shared_club}
-                  {c.agent_name ? ` · agent: ${c.agent_name}` : ''}
+            <Tile
+              key={i}
+              accent
+              className="reveal px-5 pl-6 py-4 flex items-center justify-between gap-4"
+              style={{ '--i': Math.min(i, 8) }}
+            >
+              <div className="min-w-0">
+                <p className="text-display text-2xl text-chalk leading-tight truncate">{c.name}</p>
+                <p className="text-data text-[11px] tracking-wider text-mute uppercase">
+                  {c.position} / b.{c.birth_year} / via {c.shared_club}
+                  {c.agent_name ? ` / agent: ${c.agent_name}` : ''}
                 </p>
               </div>
-              <div className="text-right">
-                <p className="text-data text-sm text-live">€{(c.market_value / 1000000).toFixed(0)}M</p>
+              <div className="text-right shrink-0">
+                <p className="text-display text-3xl text-chalk leading-none">{euro(c.market_value)}</p>
                 {c.upside_pct != null && (
-                  <p className="text-data text-xs text-floodlight">{c.upside_pct > 0 ? '+' : ''}{Math.round(c.upside_pct)}% vs model</p>
+                  <p className={`text-data text-xs mt-1 ${c.upside_pct >= 0 ? 'text-volt' : 'text-flare'}`}>
+                    {c.upside_pct > 0 ? '+' : ''}
+                    {Math.round(c.upside_pct)}% vs model
+                  </p>
                 )}
               </div>
-            </div>
+            </Tile>
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -140,37 +127,40 @@ function ShortestPathPanel() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-      <p className="text-sm text-slate-muted mb-5 max-w-2xl">
+    <div className="reveal">
+      <p className="text-sm text-mute mb-5 max-w-2xl">
         Degrees of separation between two players, traced through shared clubs.
       </p>
       <div className="grid md:grid-cols-3 gap-3 mb-6">
         <Field label="PLAYER A" value={playerA} onChange={setPlayerA} />
         <Field label="PLAYER B" value={playerB} onChange={setPlayerB} />
-        <button
-          onClick={run}
-          className="self-end bg-live hover:bg-live-dim transition-colors text-pitch-night font-medium rounded-md py-3 text-data text-sm"
-        >
-          FIND PATH
-        </button>
+        <RunButton onClick={run}>FIND PATH</RunButton>
       </div>
 
       {status === 'loading' && <LoadingState label="Searching shortest path" />}
       {status === 'error' && <ErrorState message={error} />}
       {status === 'done' && result?.chain && (
-        <div className="dossier-card rounded-lg p-6">
-          <p className="text-data text-xs text-floodlight mb-4">{result.hops} HOP{result.hops !== 1 ? 'S' : ''}</p>
-          <div className="flex flex-wrap items-center gap-3">
+        <Tile accent className="reveal p-6 pl-7">
+          <p className="text-display text-5xl text-volt leading-none mb-5">
+            {result.hops} HOP{result.hops !== 1 ? 'S' : ''}
+          </p>
+          <div className="flex flex-wrap items-center gap-2.5">
             {result.chain.map((name, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-chalk text-display text-lg">{name}</span>
-                {i < result.chain.length - 1 && <span className="text-live">→</span>}
+              <div key={i} className="flex items-center gap-2.5">
+                <span className="slant border border-edge bg-panel2 px-4 py-1.5 inline-block">
+                  <span className="unslant text-display text-lg text-chalk">{name}</span>
+                </span>
+                {i < result.chain.length - 1 && (
+                  <span className="text-volt text-data" aria-hidden="true">
+                    &gt;&gt;
+                  </span>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        </Tile>
       )}
-    </motion.div>
+    </div>
   )
 }
 
@@ -193,19 +183,14 @@ function ManagerLineagePanel() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-      <p className="text-sm text-slate-muted mb-5 max-w-2xl">
-        Players who played under a manager who later took charge at this club — surfaces
-        tactical familiarity before a signing.
+    <div className="reveal">
+      <p className="text-sm text-mute mb-5 max-w-2xl">
+        Players who played under a manager who later took charge at this club - surfaces tactical familiarity before a
+        signing.
       </p>
       <div className="grid md:grid-cols-4 gap-3 mb-6">
         <Field label="CLUB" value={club} onChange={setClub} />
-        <button
-          onClick={run}
-          className="self-end bg-live hover:bg-live-dim transition-colors text-pitch-night font-medium rounded-md py-3 text-data text-sm"
-        >
-          RUN QUERY
-        </button>
+        <RunButton onClick={run}>RUN QUERY</RunButton>
       </div>
 
       {status === 'loading' && <LoadingState label="Tracing manager lineage" />}
@@ -214,31 +199,42 @@ function ManagerLineagePanel() {
         <EmptyState title="No lineage matches" hint="Try a club with a manager who's had multiple stops." />
       )}
       {status === 'done' && results.length > 0 && (
-        <div className="grid gap-2">
+        <div className="grid gap-2.5">
           {results.map((r, i) => (
-            <div key={i} className="dossier-card rounded-md px-5 py-4">
-              <p className="text-chalk font-medium">{r.player_name}</p>
-              <p className="text-sm text-slate-muted text-data">
+            <Tile key={i} accent className="reveal px-5 pl-6 py-4" style={{ '--i': Math.min(i, 8) }}>
+              <p className="text-display text-2xl text-chalk leading-tight">{r.player_name}</p>
+              <p className="text-data text-[11px] tracking-wider text-mute uppercase">
                 played under {r.manager_name} at {r.previous_club}
               </p>
-            </div>
+            </Tile>
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
+  )
+}
+
+function RunButton({ onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className="self-end slant bg-volt hover:bg-volt-dim transition-colors text-ink py-3 px-6"
+    >
+      <span className="unslant text-data text-sm font-semibold tracking-wider">{children}</span>
+    </button>
   )
 }
 
 function Field({ label, value, onChange, placeholder, type = 'text' }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-data text-xs text-slate-muted tracking-wide">{label}</label>
+      <label className="text-data text-[10px] text-mute tracking-[0.2em]">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
         placeholder={placeholder}
-        className="dossier-card rounded-md px-3 py-3 text-sm text-chalk outline-none focus:border-live transition-colors placeholder:text-slate-muted"
+        className="bg-panel border border-edge px-3 py-3 text-sm text-chalk outline-none focus:border-volt transition-colors placeholder:text-mute"
       />
     </div>
   )

@@ -53,4 +53,18 @@ export const api = {
 
   reach: (club, player) =>
     request(`/api/insights/reach?club=${encodeURIComponent(club)}&player=${encodeURIComponent(player)}`),
+
+  assistantExamples: () => request('/api/assistant/examples'),
+
+  // Prefer the friendly "error" text over the technical "detail" for the assistant.
+  assistantQuery: async (question) => {
+    const res = await fetch(`${API_URL}/api/assistant/query`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(body.error || `Request failed (${res.status})`)
+    return body
+  },
 }

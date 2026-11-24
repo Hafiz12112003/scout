@@ -1,44 +1,52 @@
 import { Link, useLocation } from 'react-router-dom'
+import Ticker from './Ticker'
+
+const LINKS = [
+  { to: '/gems', label: 'GEMS' },
+  { to: '/ask', label: 'ASK' },
+  { to: '/reach', label: 'REACH' },
+  { to: '/explore', label: 'EXPLORE' },
+  { to: '/', label: 'SEARCH' },
+]
 
 export default function TopBar() {
-  const location = useLocation()
+  const { pathname } = useLocation()
+  const isActive = (to) => (to === '/' ? pathname === '/' : pathname.startsWith(to))
 
   return (
-    <header className="border-b border-pitch-line sticky top-0 z-20 bg-pitch-night/95 backdrop-blur">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <svg width="22" height="22" viewBox="0 0 22 22" className="text-live">
-            <circle cx="5" cy="5" r="2.5" fill="currentColor" opacity="0.9" />
-            <circle cx="17" cy="6" r="2.5" fill="currentColor" opacity="0.5" />
-            <circle cx="11" cy="16" r="2.5" fill="currentColor" opacity="0.9" />
-            <line x1="5" y1="5" x2="17" y2="6" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
-            <line x1="5" y1="5" x2="11" y2="16" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
-          </svg>
-          <span className="text-display text-2xl font-semibold tracking-wide text-chalk">
-            SCOUT
+    <header className="sticky top-0 z-20 bg-ink/90 backdrop-blur border-b border-edge">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="Scout home">
+          <span className="slant bg-volt text-ink px-3.5 py-1 inline-block">
+            <span className="unslant text-display text-2xl leading-none">SCOUT</span>
+          </span>
+          <span className="hidden sm:block text-data text-[10px] tracking-[0.22em] text-mute leading-tight">
+            GRAPH
+            <br />
+            INTEL
           </span>
         </Link>
-        <nav className="flex items-center gap-6 text-sm text-data">
-          <Link
-            to="/gems"
-            className={`transition-colors ${location.pathname === '/gems' ? 'text-floodlight' : 'text-slate-muted hover:text-chalk'}`}
-          >
-            GEMS
-          </Link>
-          <Link
-            to="/explore"
-            className={`transition-colors ${location.pathname === '/explore' ? 'text-floodlight' : 'text-slate-muted hover:text-chalk'}`}
-          >
-            EXPLORE
-          </Link>
-          <Link
-            to="/"
-            className={`transition-colors ${location.pathname === '/' ? 'text-floodlight' : 'text-slate-muted hover:text-chalk'}`}
-          >
-            SEARCH
-          </Link>
+        <nav className="flex items-center gap-1.5 overflow-x-auto no-scrollbar" aria-label="Main">
+          {LINKS.map((l) => {
+            const active = isActive(l.to)
+            return (
+              <Link
+                key={l.to}
+                to={l.to}
+                aria-current={active ? 'page' : undefined}
+                className={`slant px-4 py-1.5 border text-data text-xs tracking-wider transition-colors ${
+                  active
+                    ? 'bg-volt text-ink border-volt font-semibold'
+                    : 'border-edge text-mute hover:text-chalk hover:border-mute'
+                }`}
+              >
+                <span className="unslant">{l.label}</span>
+              </Link>
+            )
+          })}
         </nav>
       </div>
+      <Ticker />
     </header>
   )
 }

@@ -2,19 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3-force'
 
 /**
- * Hand-styled force-directed graph rendered as an annotated tactics board.
- * Nodes = formation markers. Edges = dashed transfer routes with labels.
- * Deliberately not a generic force-graph-library look.
+ * Force-directed graph drawn as a broadcast tactics board.
+ * Centre node = volt marker with a pulse ring. Edges = dashed routes with labels.
  */
 export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 }) {
-  const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [positions, setPositions] = useState({})
   const [dimensions, setDimensions] = useState({ width: 800, height })
   const [hoveredNode, setHoveredNode] = useState(null)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current) return undefined
     const resize = () => {
       setDimensions({ width: containerRef.current.offsetWidth, height })
     }
@@ -51,18 +49,18 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
   return (
     <div ref={containerRef} className="relative w-full">
       <svg
-        ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
         className="overflow-visible"
+        role="img"
+        aria-label="Network graph of connected players"
       >
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#3FA34D" opacity="0.6" />
+            <path d="M0,0 L10,5 L0,10 z" fill="#C8FF3C" opacity="0.6" />
           </marker>
         </defs>
 
-        {/* Edges: dashed transfer routes with inline labels */}
         {edges.map((edge, i) => {
           const source = positions[edge.source]
           const target = positions[edge.target]
@@ -76,9 +74,9 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
                 y1={source.y}
                 x2={target.x}
                 y2={target.y}
-                stroke="#3FA34D"
+                stroke="#C8FF3C"
                 strokeWidth="1.5"
-                strokeOpacity="0.45"
+                strokeOpacity="0.35"
                 className="route-dash"
                 markerEnd="url(#arrow)"
               />
@@ -89,9 +87,8 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
                     y={midY - 9}
                     width={edge.label.length * 6.4 + 8}
                     height="16"
-                    fill="#0B1210"
-                    stroke="#24352C"
-                    rx="2"
+                    fill="#06090D"
+                    stroke="#1E2B36"
                   />
                   <text
                     x={midX}
@@ -99,7 +96,7 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
                     textAnchor="middle"
                     fontSize="10"
                     fontFamily="'IBM Plex Mono', monospace"
-                    fill="#5C6B64"
+                    fill="#6E8091"
                   >
                     {edge.label}
                   </text>
@@ -109,7 +106,6 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
           )
         })}
 
-        {/* Nodes: formation markers */}
         {nodes.map((node) => {
           const pos = positions[node.id]
           if (!pos) return null
@@ -124,22 +120,31 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
               onMouseEnter={() => setHoveredNode(node.id)}
               onMouseLeave={() => setHoveredNode(null)}
               className="cursor-pointer"
-              style={{ transition: 'transform 0.2s ease' }}
             >
+              {isCenter && (
+                <circle
+                  r={radius}
+                  fill="none"
+                  stroke="#C8FF3C"
+                  strokeWidth="1.5"
+                  className="animate-ring"
+                  style={{ transformOrigin: 'center', transformBox: 'fill-box' }}
+                />
+              )}
               <circle
                 r={radius}
-                fill={isCenter ? '#E8A33D' : '#182A22'}
-                stroke={isCenter ? '#E8A33D' : isHovered ? '#3FA34D' : '#24352C'}
+                fill={isCenter ? '#C8FF3C' : '#121C25'}
+                stroke={isCenter ? '#C8FF3C' : isHovered ? '#C8FF3C' : '#1E2B36'}
                 strokeWidth={isHovered ? 2 : 1.5}
-                opacity={isCenter ? 1 : 0.95}
               />
               <text
                 textAnchor="middle"
                 dy="4"
-                fontSize={isCenter ? 11 : 9}
+                fontSize={isCenter ? 12 : 10}
                 fontFamily="'Barlow Condensed', sans-serif"
-                fontWeight="600"
-                fill={isCenter ? '#0B1210' : '#EDEFE9'}
+                fontStyle="italic"
+                fontWeight="800"
+                fill={isCenter ? '#06090D' : '#EEF2F5'}
               >
                 {initials(node.label)}
               </text>
@@ -150,16 +155,15 @@ export default function NetworkGraph({ nodes, edges, centerNodeId, height = 480 
                     y={radius + 6}
                     width={node.label.length * 6.8}
                     height="18"
-                    fill="#131F1A"
-                    stroke="#24352C"
-                    rx="2"
+                    fill="#0D141B"
+                    stroke="#1E2B36"
                   />
                   <text
                     textAnchor="middle"
                     y={radius + 18}
                     fontSize="10"
                     fontFamily="'IBM Plex Sans', sans-serif"
-                    fill="#EDEFE9"
+                    fill="#EEF2F5"
                   >
                     {node.label}
                   </text>

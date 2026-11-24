@@ -4,34 +4,90 @@
 
 @layer base {
   html, body {
-    background-color: #0B1210;
-    color: #EDEFE9;
+    background-color: #06090D;
+    color: #EEF2F5;
   }
   body {
     font-family: 'IBM Plex Sans', sans-serif;
     background-image:
-      linear-gradient(rgba(237,239,233,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(237,239,233,0.015) 1px, transparent 1px);
-    background-size: 48px 48px;
+      radial-gradient(1100px 480px at 88% -8%, rgba(200, 255, 60, 0.07), transparent 60%),
+      repeating-linear-gradient(135deg, rgba(238, 242, 245, 0.02) 0 1px, transparent 1px 16px);
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: #C8FF3C;
+    color: #06090D;
   }
   *:focus-visible {
-    outline: 2px solid #E8A33D;
+    outline: 2px solid #C8FF3C;
     outline-offset: 2px;
   }
 }
 
 @layer utilities {
+  /* display = broadcast headline */
   .text-display {
     font-family: 'Barlow Condensed', sans-serif;
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
     letter-spacing: 0.01em;
   }
+  /* data = monospace numbers */
   .text-data {
     font-family: 'IBM Plex Mono', monospace;
     font-variant-numeric: tabular-nums;
   }
   .dossier-card {
-    background: #131F1A;
-    border: 1px solid #24352C;
+    background: #0D141B;
+    border: 1px solid #1E2B36;
+  }
+  /* cut-corner tile */
+  .tile {
+    position: relative;
+    background: #0D141B;
+    border: 1px solid #1E2B36;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  }
+  .tile-accent::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #C8FF3C;
+  }
+  .tile-flare::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #FF5A36;
+  }
+  /* slanted blocks: wrap label in .unslant */
+  .slant {
+    transform: skewX(-12deg);
+  }
+  .unslant {
+    display: inline-block;
+    transform: skewX(12deg);
+  }
+  /* diagonal-stripe accent */
+  .stripes {
+    background-image: repeating-linear-gradient(135deg, #C8FF3C 0 6px, transparent 6px 12px);
+  }
+  .reveal {
+    animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
   .route-dash {
     stroke-dasharray: 4 4;
@@ -42,6 +98,10 @@
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.001ms !important;
+  }
+  .ticker-track {
+    animation: none !important;
   }
 }
