@@ -2,14 +2,11 @@
 
 ### Find the football players the market undervalues - and the people who lead to them.
 
-[![Live demo](https://img.shields.io/badge/live_demo-scout--frontend-C8FF3C?style=for-the-badge&labelColor=06090D)](https://scout-frontend-pblr.onrender.com)
-[![API](https://img.shields.io/badge/API-Render-FFB020?style=for-the-badge&labelColor=06090D)](https://scout-backend-2krc.onrender.com/api/health)
-![Stack](https://img.shields.io/badge/React_+_Flask_+_Neo4j-1E2B36?style=for-the-badge)
-
 **Live site:** https://scout-frontend-pblr.onrender.com
-**Backend API:** https://scout-backend-2krc.onrender.com
 
 > The backend runs on Render's free tier, so the very first request after a quiet period can take 30-50 seconds while it wakes up. After that it is fast.
+
+**In simple words:** Scout is a website that helps a football club decide which players to sign. It does two jobs. First, it spots players who cost less than they should: a computer model learns what a player is worth from his age, position and recent performances, and Scout shows who is priced below that. Second, it shows how the club could reach that player, through people they already share, such as old teammates and managers. You can even just type a question like "young left-backs under 20 million" and get an answer.
 
 <!--
 SCREENSHOTS: save your images in a Screenshots folder, then remove the comment markers around this block:
