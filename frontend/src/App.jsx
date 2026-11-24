@@ -47,14 +47,14 @@ export default function App() {
       <footer className="border-t border-edge py-6 mt-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-data text-[11px] tracking-[0.18em] text-mute">
-            SCOUT / GRAPH INTELLIGENCE / DATA:{' '}
+            SCOUT / GRAPH INTELLIGENCE / BUILT BY{' '}
             <a
-              className="text-chalk underline decoration-edge hover:decoration-volt"
-              href="https://github.com/oladeeayo/pl-catalogue"
+              className="text-chalk underline decoration-edge hover:text-volt hover:decoration-volt transition-colors"
+              href="https://hafiz-portfolio-v2.vercel.app/"
               target="_blank"
               rel="noreferrer"
             >
-              OLADEEAYO/PL-CATALOGUE
+              HAFIZ
             </a>
           </p>
           <p className="text-data text-[11px] tracking-[0.18em] text-mute flex items-center gap-2">

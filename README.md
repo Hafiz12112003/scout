@@ -8,13 +8,13 @@
 
 **In simple words:** Scout is a website that helps a football club decide which players to sign. It does two jobs. First, it spots players who cost less than they should: a computer model learns what a player is worth from his age, position and recent performances, and Scout shows who is priced below that. Second, it shows how the club could reach that player, through people they already share, such as old teammates and managers. You can even just type a question like "young left-backs under 20 million" and get an answer.
 
-<!--
-SCREENSHOTS: save your images in a Screenshots folder, then remove the comment markers around this block:
+## See it in action
 
-![Landing](./Screenshots/landing.png)
+![Landing page](./Screenshots/landing.png)
+
 ![Hidden gems](./Screenshots/gems.png)
-![Reach map](./Screenshots/reach.png)
--->
+
+![Reach path on the pitch map](./Screenshots/reach.png)
 
 ---
 
