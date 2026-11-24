@@ -14,6 +14,7 @@ from routes.players import players_bp
 from routes.clubs import clubs_bp
 from routes.network import network_bp
 from routes.insights import insights_bp
+from routes.assistant import assistant_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -22,6 +23,7 @@ app.register_blueprint(players_bp, url_prefix="/api/players")
 app.register_blueprint(clubs_bp, url_prefix="/api/clubs")
 app.register_blueprint(network_bp, url_prefix="/api/network")
 app.register_blueprint(insights_bp, url_prefix="/api/insights")
+app.register_blueprint(assistant_bp, url_prefix="/api/assistant")
 
 
 @app.route("/api/health")
